@@ -28,38 +28,37 @@ def center_window(win, w=900, h=600):
 
 
 root = tk.Tk()
-root.title("Quản lý Sinh viên")
-root.configure(bg="#000000")
+root.title("QUẢN LÝ SINH VIÊN")
+root.configure(bg="white")
 center_window(root, 900, 600)
 root.resizable(False, False)
-
 
 style = ttk.Style()
 style.theme_use("clam")
 
 style.configure(
     "Treeview",
-    background="#1e1e1e",
-    foreground="#ffffff",
-    fieldbackground="#1e1e1e",
+    background="white",
+    foreground="black",
+    fieldbackground="white",
     rowheight=22
 )
 style.configure(
     "Treeview.Heading",
-    background="#333333",
-    foreground="#ffffff"
+    background="#e0e0e0",
+    foreground="black"
 )
-style.map("Treeview", background=[("selected", "#444444")])
+style.map("Treeview", background=[("selected", "#cde5ff")])
 
 style.configure(
     "TButton",
     padding=4,
-    background="#333333",
-    foreground="#ffffff"
+    background="#e0e0e0",
+    foreground="black"
 )
 style.map(
     "TButton",
-    background=[("active", "#555555")]
+    background=[("active", "#d0d0d0")]
 )
 
 
@@ -67,29 +66,28 @@ lbl_title = tk.Label(
     root,
     text="QUẢN LÝ SINH VIÊN",
     font=("Arial", 20, "bold"),
-    bg="#000000",
-    fg="#00ffcc"
+    bg="white",
+    fg="#008b8b"
 )
 lbl_title.pack(pady=10)
 
 
-frame_info = tk.Frame(root, bg="#000000")
+frame_info = tk.Frame(root, bg="white")
 frame_info.pack(pady=5, padx=10, fill="x")
 
 def create_label(text, row, col):
     lbl = tk.Label(
         frame_info,
         text=text,
-        bg="#000000",
-        fg="#ffffff",
+        bg="white",
+        fg="black",
         font=("Arial", 10)
     )
     lbl.grid(row=row, column=col, padx=5, pady=4, sticky="w")
     return lbl
 
-
 create_label("MSSV", 0, 0)
-entry_mssv = tk.Entry(frame_info, width=18, bg="#111111", fg="#ffffff", insertbackground="#ffffff")
+entry_mssv = tk.Entry(frame_info, width=18, bg="white", fg="black", insertbackground="black")
 entry_mssv.grid(row=0, column=1, padx=5, pady=4, sticky="w")
 
 create_label("Lớp", 0, 2)
@@ -100,9 +98,8 @@ cbb_lop = ttk.Combobox(
 )
 cbb_lop.grid(row=0, column=3, padx=5, pady=4, sticky="w")
 
-
 create_label("Họ lót", 1, 0)
-entry_holot = tk.Entry(frame_info, width=25, bg="#111111", fg="#ffffff", insertbackground="#ffffff")
+entry_holot = tk.Entry(frame_info, width=25, bg="white", fg="black", insertbackground="black")
 entry_holot.grid(row=1, column=1, padx=5, pady=4, sticky="w")
 
 create_label("Khoa", 1, 2)
@@ -113,49 +110,55 @@ cbb_khoa = ttk.Combobox(
 )
 cbb_khoa.grid(row=1, column=3, padx=5, pady=4, sticky="w")
 
-
 create_label("Tên", 2, 0)
-entry_ten = tk.Entry(frame_info, width=18, bg="#111111", fg="#ffffff", insertbackground="#ffffff")
+entry_ten = tk.Entry(frame_info, width=18, bg="white", fg="black", insertbackground="black")
 entry_ten.grid(row=2, column=1, padx=5, pady=4, sticky="w")
 
 create_label("Phái", 2, 2)
 gender_var = tk.StringVar(value="Nam")
 
-frame_gender = tk.Frame(frame_info, bg="#000000")
+frame_gender = tk.Frame(frame_info, bg="white")
 frame_gender.grid(row=2, column=3, padx=5, pady=4, sticky="w")
 
-tk.Radiobutton(frame_gender, text="Nam", variable=gender_var, value="Nam",
-               bg="#000000", fg="#ffffff", selectcolor="#000000").pack(side="left", padx=2)
-tk.Radiobutton(frame_gender, text="Nữ", variable=gender_var, value="Nữ",
-               bg="#000000", fg="#ffffff", selectcolor="#000000").pack(side="left", padx=2)
+tk.Radiobutton(
+    frame_gender, text="Nam", variable=gender_var, value="Nam",
+    bg="white", fg="black", selectcolor="white"
+).pack(side="left", padx=2)
+
+tk.Radiobutton(
+    frame_gender, text="Nữ", variable=gender_var, value="Nữ",
+    bg="white", fg="black", selectcolor="white"
+).pack(side="left", padx=2)
 
 create_label("Ngày sinh", 3, 0)
 date_ngaysinh = DateEntry(
     frame_info,
     width=16,
-    background="black",
-    foreground="white",
+    background="white",
+    foreground="black",
     borderwidth=1,
     date_pattern="yyyy-mm-dd"
 )
 date_ngaysinh.grid(row=3, column=1, padx=5, pady=4, sticky="w")
 
-frame_filter = tk.Frame(root, bg="#000000")
+
+frame_filter = tk.Frame(root, bg="white")
 frame_filter.pack(pady=5, padx=10, fill="x")
 
-tk.Label(frame_filter, text="Tìm kiếm:", bg="#000000", fg="#ffffff").grid(row=0, column=0, padx=5)
-entry_search = tk.Entry(frame_filter, width=25, bg="#111111", fg="#ffffff", insertbackground="#ffffff")
+tk.Label(frame_filter, text="Tìm kiếm:", bg="white", fg="black").grid(row=0, column=0, padx=5)
+entry_search = tk.Entry(frame_filter, width=25, bg="white", fg="black", insertbackground="black")
 entry_search.grid(row=0, column=1, padx=5)
 
-tk.Label(frame_filter, text="Lọc lớp:", bg="#000000", fg="#ffffff").grid(row=0, column=2)
+tk.Label(frame_filter, text="Lọc lớp:", bg="white", fg="black").grid(row=0, column=2)
 cbb_loc_lop = ttk.Combobox(frame_filter, values=["(Tất cả)", "DH25PM", "DH25TH", "DH25T", "DH24PM"], width=15)
 cbb_loc_lop.set("(Tất cả)")
 cbb_loc_lop.grid(row=0, column=3, padx=5)
 
-tk.Label(frame_filter, text="Lọc khoa:", bg="#000000", fg="#ffffff").grid(row=0, column=4)
+tk.Label(frame_filter, text="Lọc khoa:", bg="white", fg="black").grid(row=0, column=4)
 cbb_loc_khoa = ttk.Combobox(frame_filter, values=["(Tất cả)", "CNTT", "Kinh tế", "Sư phạm", "Nông nghiệp"], width=15)
 cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
+
 
 columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa")
 tree = ttk.Treeview(root, columns=columns, show="headings", height=12)
@@ -163,6 +166,7 @@ tree = ttk.Treeview(root, columns=columns, show="headings", height=12)
 for col in columns:
     tree.heading(col, text=col.upper())
 tree.pack(padx=10, pady=10, fill="both")
+
 
 def clear_input():
     entry_mssv.delete(0, tk.END)
@@ -179,7 +183,8 @@ def load_data(keyword=None, lop=None, khoa=None):
         tree.delete(row)
 
     conn = connect_db()
-    if not conn: return
+    if not conn:
+        return
     cur = conn.cursor()
 
     query = "SELECT * FROM sinhvien WHERE 1=1"
@@ -294,7 +299,6 @@ def xoa_sv():
     if not conn:
         print("Không thể kết nối đến cơ sở dữ liệu.")
         return
-    
 
     try:
         cur = conn.cursor()
@@ -315,7 +319,8 @@ def tim_kiem():
         khoa=cbb_loc_khoa.get()
     )
 
-frame_btn = tk.Frame(root, bg="#000000")
+
+frame_btn = tk.Frame(root, bg="white")
 frame_btn.pack(pady=5)
 
 ttk.Button(frame_btn, text="Thêm", width=10, command=them_sv).grid(row=0, column=0, padx=5)
@@ -330,5 +335,4 @@ cbb_loc_lop.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
 cbb_loc_khoa.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
 
 load_data()
-
 root.mainloop()
