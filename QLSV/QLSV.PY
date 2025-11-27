@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import mysql.connector
 
@@ -14,6 +14,7 @@ def connect_db():
         )
         return conn
     except Exception as e:
+        messagebox.showerror("Lỗi kết nối", f"Không kết nối được MySQL:\n{e}")
         print("Lỗi kết nối MySQL:", e)
         return None
 
@@ -75,6 +76,7 @@ lbl_title.pack(pady=10)
 frame_info = tk.Frame(root, bg="white")
 frame_info.pack(pady=5, padx=10, fill="x")
 
+
 def create_label(text, row, col):
     lbl = tk.Label(
         frame_info,
@@ -85,6 +87,7 @@ def create_label(text, row, col):
     )
     lbl.grid(row=row, column=col, padx=5, pady=4, sticky="w")
     return lbl
+
 
 create_label("MSSV", 0, 0)
 entry_mssv = tk.Entry(frame_info, width=18, bg="white", fg="black", insertbackground="black")
@@ -178,6 +181,7 @@ def clear_input():
     entry_search.delete(0, tk.END)
     date_ngaysinh.set_date("2000-01-01")
 
+
 def load_data(keyword=None, lop=None, khoa=None):
     for row in tree.get_children():
         tree.delete(row)
@@ -210,36 +214,52 @@ def load_data(keyword=None, lop=None, khoa=None):
 
     conn.close()
 
+
 def them_sv():
+    mssv = entry_mssv.get().strip()
+    holot = entry_holot.get().strip()
+    ten = entry_ten.get().strip()
+    lop = cbb_lop.get().strip()
+    khoa = cbb_khoa.get().strip()
+
+    if not mssv or not holot or not ten or not lop or not khoa:
+        messagebox.showwarning("Thiếu dữ liệu", "Vui lòng nhập đầy đủ thông tin sinh viên.")
+        return
+
     conn = connect_db()
     if not conn:
-        print("Không thể kết nối đến cơ sở dữ liệu.")
+        messagebox.showerror("Lỗi", "Không thể kết nối đến cơ sở dữ liệu.")
         return
-    
+
     try:
         cur = conn.cursor()
-        cur.execute("INSERT INTO sinhvien VALUES (%s,%s,%s,%s,%s,%s,%s)", (
-            entry_mssv.get(),
-            entry_holot.get(),
-            entry_ten.get(),
-            gender_var.get(),
-            date_ngaysinh.get(),
-            cbb_lop.get(),
-            cbb_khoa.get()
-        ))
+        cur.execute(
+            "INSERT INTO sinhvien VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            (
+                mssv,
+                holot,
+                ten,
+                gender_var.get(),
+                date_ngaysinh.get(),
+                lop,
+                khoa
+            )
+        )
         conn.commit()
-        print("Thêm sinh viên thành công.")
+        messagebox.showinfo("Thành công", "Thêm sinh viên thành công.")
         load_data()
         clear_input()
     except Exception as e:
+        messagebox.showerror("Lỗi thêm", f"Không thể thêm sinh viên:\n{e}")
         print("Lỗi thêm:", e)
     finally:
         conn.close()
 
+
 def sua_sv():
     selected = tree.selection()
     if not selected:
-        print("Chưa chọn sinh viên để sửa.")
+        messagebox.showwarning("Chưa chọn", "Hãy chọn sinh viên cần sửa.")
         return
 
     values = tree.item(selected[0])["values"]
@@ -258,59 +278,85 @@ def sua_sv():
     cbb_lop.set(values[5])
     cbb_khoa.set(values[6])
 
+
 def luu_sv():
+    mssv = entry_mssv.get().strip()
+    if not mssv:
+        messagebox.showwarning("Thiếu dữ liệu", "Chưa có MSSV để lưu (vui lòng chọn hoặc nhập lại).")
+        return
+
     conn = connect_db()
     if not conn:
-        print("Không thể kết nối đến cơ sở dữ liệu.")
+        messagebox.showerror("Lỗi", "Không thể kết nối đến cơ sở dữ liệu.")
         return
     try:
         cur = conn.cursor()
-        cur.execute("""
+        cur.execute(
+            """
             UPDATE sinhvien
             SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s
             WHERE mssv=%s
-        """, (
-            entry_holot.get(),
-            entry_ten.get(),
-            gender_var.get(),
-            date_ngaysinh.get(),
-            cbb_lop.get(),
-            cbb_khoa.get(),
-            entry_mssv.get()
-        ))
+        """,
+            (
+                entry_holot.get(),
+                entry_ten.get(),
+                gender_var.get(),
+                date_ngaysinh.get(),
+                cbb_lop.get(),
+                cbb_khoa.get(),
+                mssv
+            )
+        )
         conn.commit()
-        print("Đã lưu thông tin sinh viên.")
+        if cur.rowcount == 0:
+            messagebox.showwarning("Không tìm thấy", "Không tìm thấy sinh viên với MSSV đã nhập.")
+        else:
+            messagebox.showinfo("Thành công", "Đã lưu thông tin sinh viên.")
         load_data()
         clear_input()
     except Exception as e:
+        messagebox.showerror("Lỗi lưu", f"Không thể lưu thông tin sinh viên:\n{e}")
         print("Lỗi lưu:", e)
     finally:
         conn.close()
-        
+
+
 def xoa_sv():
     selected = tree.selection()
     if not selected:
-        print("Chưa chọn sinh viên để xóa.")
+        messagebox.showwarning("Chưa chọn", "Hãy chọn sinh viên cần xóa.")
         return
 
     mssv = tree.item(selected[0])["values"][0]
-    
+
+    confirm = messagebox.askyesno(
+        "Xác nhận xóa",
+        f"Bạn có chắc chắn muốn xóa sinh viên có MSSV: {mssv} không?"
+    )
+    if not confirm:
+        return
+
     conn = connect_db()
     if not conn:
-        print("Không thể kết nối đến cơ sở dữ liệu.")
+        messagebox.showerror("Lỗi", "Không thể kết nối đến cơ sở dữ liệu.")
         return
 
     try:
         cur = conn.cursor()
         cur.execute("DELETE FROM sinhvien WHERE mssv=%s", (mssv,))
         conn.commit()
-        print("Đã xóa sinh viên.")
+        if cur.rowcount == 0:
+            messagebox.showwarning("Không tìm thấy", "Không tìm thấy sinh viên để xóa.")
+        else:
+            messagebox.showinfo("Thành công", "Đã xóa sinh viên.")
         load_data()
         clear_input()
     except Exception as e:
+        messagebox.showerror("Lỗi xóa", f"Không thể xóa sinh viên:\n{e}")
         print("Lỗi xóa:", e)
     finally:
         conn.close()
+
 
 def tim_kiem():
     load_data(
@@ -318,6 +364,11 @@ def tim_kiem():
         lop=cbb_loc_lop.get(),
         khoa=cbb_loc_khoa.get()
     )
+
+
+def thoat_ung_dung():
+    if messagebox.askokcancel("Thoát", "Bạn có chắc chắn muốn thoát chương trình?"):
+        root.destroy()
 
 
 frame_btn = tk.Frame(root, bg="white")
@@ -329,7 +380,7 @@ ttk.Button(frame_btn, text="Sửa", width=10, command=sua_sv).grid(row=0, column
 ttk.Button(frame_btn, text="Xóa", width=10, command=xoa_sv).grid(row=0, column=3, padx=5)
 ttk.Button(frame_btn, text="Hủy", width=10, command=clear_input).grid(row=0, column=4, padx=5)
 ttk.Button(frame_btn, text="Tìm kiếm", width=10, command=tim_kiem).grid(row=0, column=5, padx=5)
-ttk.Button(frame_btn, text="Thoát", width=10, command=root.quit).grid(row=0, column=6, padx=5)
+ttk.Button(frame_btn, text="Thoát", width=10, command=thoat_ung_dung).grid(row=0, column=6, padx=5)
 
 cbb_loc_lop.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
 cbb_loc_khoa.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
