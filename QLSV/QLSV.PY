@@ -18,7 +18,6 @@ def connect_db():
         print("Lỗi kết nối MySQL:", e)
         return None
 
-
 def center_window(win, w=900, h=600):
     win.update_idletasks()
     ws = win.winfo_screenwidth()
