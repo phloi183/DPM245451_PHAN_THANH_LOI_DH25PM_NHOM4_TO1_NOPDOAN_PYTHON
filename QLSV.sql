@@ -23,13 +23,14 @@ DROP TABLE IF EXISTS `sinhvien`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sinhvien` (
-  `mssv` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `holot` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ten` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `phai` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mssv` varchar(9) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `holot` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ten` varchar(9) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phai` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ngaysinh` date DEFAULT NULL,
-  `lop` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `khoa` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lop` varchar(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `khoa` varchar(12) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `diem` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`mssv`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -40,7 +41,7 @@ CREATE TABLE `sinhvien` (
 
 LOCK TABLES `sinhvien` WRITE;
 /*!40000 ALTER TABLE `sinhvien` DISABLE KEYS */;
-INSERT INTO `sinhvien` VALUES ('DPM245451','PHAN THANH','LOI','Nam','2006-02-01','DH25PM','CNTT');
+INSERT INTO `sinhvien` VALUES ('DPM245403','TRAN THI KIM','ANH','Nữ','2000-01-01','DH25PM','CNTT','7'),('DPM245442','LE NGUYEN DANG','KHOA','Nam','2000-01-01','DH25PM','CNTT','4'),('DPM245446','HUYNH PHUC','LAM','Nam','2000-01-01','DH25PM','CNTT','6'),('DPM245448','CAO THI TRUC','LINH','Nữ','2000-01-01','DH25PM','CNTT','8'),('DPM245451','PHAN THANH','LOI','Nam','2025-12-02','DH25PM','CNTT','10'),('DPM245465','LAM HUYNH PHUONG','NGHIEM','Nữ','2000-01-01','DH25PM','CNTT','5'),('DPM245533','NGUYEN QUOC','HUY','Nam','2000-01-01','DH25PM','CNTT','9');
 /*!40000 ALTER TABLE `sinhvien` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-30  7:55:24
+-- Dump completed on 2025-12-02 10:58:21
