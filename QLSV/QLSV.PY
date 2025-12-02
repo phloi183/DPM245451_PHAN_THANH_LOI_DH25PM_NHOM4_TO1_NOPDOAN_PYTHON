@@ -166,7 +166,7 @@ cbb_loc_khoa = ttk.Combobox(frame_filter, values=["(Tất cả)", "CNTT", "Kinh 
 cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
 
-# ====== Bảng dữ liệu ======
+
 columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa", "diem")
 tree = ttk.Treeview(root, columns=columns, show="headings", height=12)
 
@@ -382,7 +382,7 @@ def thoat_ung_dung():
         root.destroy()
 
 
-# ====== Hàm xuất Excel ======
+
 def xuat_excel():
     if not tree.get_children():
         messagebox.showwarning("Không có dữ liệu", "Không có dữ liệu để xuất Excel.")
@@ -392,11 +392,11 @@ def xuat_excel():
     ws = wb.active
     ws.title = "SinhVien"
 
-    # tiêu đề cột
+
     headers = ["MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH", "LỚP", "KHOA", "ĐIỂM"]
     ws.append(headers)
 
-    # dữ liệu từ Treeview
+
     for item in tree.get_children():
         row = tree.item(item)["values"]
         ws.append(row)
