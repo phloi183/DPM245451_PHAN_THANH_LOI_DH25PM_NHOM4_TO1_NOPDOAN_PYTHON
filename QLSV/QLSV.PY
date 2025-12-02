@@ -1,10 +1,11 @@
-import tkinter as tk
+import tkinter as tk  
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import mysql.connector
+from openpyxl import Workbook 
 
 
-def connect_db():
+def connect_db():  
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -17,6 +18,7 @@ def connect_db():
         messagebox.showerror("Lỗi kết nối", f"Không kết nối được MySQL:\n{e}")
         print("Lỗi kết nối MySQL:", e)
         return None
+
 
 def center_window(win, w=900, h=600):
     win.update_idletasks()
@@ -61,7 +63,6 @@ style.map(
     background=[("active", "#d0d0d0")]
 )
 
-
 lbl_title = tk.Label(
     root,
     text="QUẢN LÝ SINH VIÊN",
@@ -70,7 +71,6 @@ lbl_title = tk.Label(
     fg="#008b8b"
 )
 lbl_title.pack(pady=10)
-
 
 frame_info = tk.Frame(root, bg="white")
 frame_info.pack(pady=5, padx=10, fill="x")
@@ -144,6 +144,11 @@ date_ngaysinh = DateEntry(
 date_ngaysinh.grid(row=3, column=1, padx=5, pady=4, sticky="w")
 
 
+create_label("Điểm", 3, 2)
+entry_diem = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
+entry_diem.grid(row=3, column=3, padx=5, pady=4, sticky="w")
+
+
 frame_filter = tk.Frame(root, bg="white")
 frame_filter.pack(pady=5, padx=10, fill="x")
 
@@ -161,8 +166,8 @@ cbb_loc_khoa = ttk.Combobox(frame_filter, values=["(Tất cả)", "CNTT", "Kinh 
 cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
 
-
-columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa")
+# ====== Bảng dữ liệu ======
+columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa", "diem")
 tree = ttk.Treeview(root, columns=columns, show="headings", height=12)
 
 for col in columns:
@@ -174,6 +179,7 @@ def clear_input():
     entry_mssv.delete(0, tk.END)
     entry_holot.delete(0, tk.END)
     entry_ten.delete(0, tk.END)
+    entry_diem.delete(0, tk.END)
     gender_var.set("Nam")
     cbb_lop.set("")
     cbb_khoa.set("")
@@ -220,8 +226,9 @@ def them_sv():
     ten = entry_ten.get().strip()
     lop = cbb_lop.get().strip()
     khoa = cbb_khoa.get().strip()
+    diem = entry_diem.get().strip()
 
-    if not mssv or not holot or not ten or not lop or not khoa:
+    if not mssv or not holot or not ten or not lop or not khoa or not diem:
         messagebox.showwarning("Thiếu dữ liệu", "Vui lòng nhập đầy đủ thông tin sinh viên.")
         return
 
@@ -233,7 +240,8 @@ def them_sv():
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO sinhvien VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            "INSERT INTO sinhvien(mssv, holot, ten, phai, ngaysinh, lop, khoa, diem) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
             (
                 mssv,
                 holot,
@@ -241,7 +249,8 @@ def them_sv():
                 gender_var.get(),
                 date_ngaysinh.get(),
                 lop,
-                khoa
+                khoa,
+                diem
             )
         )
         conn.commit()
@@ -276,6 +285,8 @@ def sua_sv():
     date_ngaysinh.set_date(values[4])
     cbb_lop.set(values[5])
     cbb_khoa.set(values[6])
+    entry_diem.delete(0, tk.END)
+    entry_diem.insert(0, values[7])
 
 
 def luu_sv():
@@ -293,9 +304,9 @@ def luu_sv():
         cur.execute(
             """
             UPDATE sinhvien
-            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s
+            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s, diem=%s
             WHERE mssv=%s
-        """,
+            """,
             (
                 entry_holot.get(),
                 entry_ten.get(),
@@ -303,6 +314,7 @@ def luu_sv():
                 date_ngaysinh.get(),
                 cbb_lop.get(),
                 cbb_khoa.get(),
+                entry_diem.get(),
                 mssv
             )
         )
@@ -370,6 +382,33 @@ def thoat_ung_dung():
         root.destroy()
 
 
+# ====== Hàm xuất Excel ======
+def xuat_excel():
+    if not tree.get_children():
+        messagebox.showwarning("Không có dữ liệu", "Không có dữ liệu để xuất Excel.")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "SinhVien"
+
+    # tiêu đề cột
+    headers = ["MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH", "LỚP", "KHOA", "ĐIỂM"]
+    ws.append(headers)
+
+    # dữ liệu từ Treeview
+    for item in tree.get_children():
+        row = tree.item(item)["values"]
+        ws.append(row)
+
+    file_name = "sinhvien.xlsx"
+    try:
+        wb.save(file_name)
+        messagebox.showinfo("Xuất Excel", f"Đã xuất dữ liệu ra file {file_name} trong thư mục hiện tại.")
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Không thể lưu file Excel:\n{e}")
+
+
 frame_btn = tk.Frame(root, bg="white")
 frame_btn.pack(pady=5)
 
@@ -379,7 +418,8 @@ ttk.Button(frame_btn, text="Sửa", width=10, command=sua_sv).grid(row=0, column
 ttk.Button(frame_btn, text="Xóa", width=10, command=xoa_sv).grid(row=0, column=3, padx=5)
 ttk.Button(frame_btn, text="Hủy", width=10, command=clear_input).grid(row=0, column=4, padx=5)
 ttk.Button(frame_btn, text="Tìm kiếm", width=10, command=tim_kiem).grid(row=0, column=5, padx=5)
-ttk.Button(frame_btn, text="Thoát", width=10, command=thoat_ung_dung).grid(row=0, column=6, padx=5)
+ttk.Button(frame_btn, text="Xuất Excel", width=10, command=xuat_excel).grid(row=0, column=6, padx=5)
+ttk.Button(frame_btn, text="Thoát", width=10, command=thoat_ung_dung).grid(row=0, column=7, padx=5)
 
 cbb_loc_lop.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
 cbb_loc_khoa.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
