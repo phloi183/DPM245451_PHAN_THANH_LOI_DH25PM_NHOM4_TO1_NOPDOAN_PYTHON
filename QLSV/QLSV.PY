@@ -29,6 +29,7 @@ def center_window(win, w=900, h=600):
     win.geometry(f"{w}x{h}+{x}+{y}")
 
 
+
 root = tk.Tk()
 root.title("QUẢN LÝ SINH VIÊN")
 root.configure(bg="white")
@@ -63,8 +64,12 @@ style.map(
     background=[("active", "#d0d0d0")]
 )
 
+
+main_frame = tk.Frame(root, bg="white")
+main_frame.pack(fill="both", expand=True)
+
 lbl_title = tk.Label(
-    root,
+    main_frame,
     text="QUẢN LÝ SINH VIÊN",
     font=("Arial", 20, "bold"),
     bg="white",
@@ -72,7 +77,7 @@ lbl_title = tk.Label(
 )
 lbl_title.pack(pady=10)
 
-frame_info = tk.Frame(root, bg="white")
+frame_info = tk.Frame(main_frame, bg="white")
 frame_info.pack(pady=5, padx=10, fill="x")
 
 
@@ -86,6 +91,7 @@ def create_label(text, row, col):
     )
     lbl.grid(row=row, column=col, padx=5, pady=4, sticky="w")
     return lbl
+
 
 
 create_label("MSSV", 0, 0)
@@ -144,12 +150,49 @@ date_ngaysinh = DateEntry(
 date_ngaysinh.grid(row=3, column=1, padx=5, pady=4, sticky="w")
 
 
-create_label("Điểm", 3, 2)
-entry_diem = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
-entry_diem.grid(row=3, column=3, padx=5, pady=4, sticky="w")
+
+create_label("Điểm 1", 3, 2)
+entry_diem1 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
+entry_diem1.grid(row=3, column=3, padx=5, pady=4, sticky="w")
+
+create_label("Điểm 2", 4, 0)
+entry_diem2 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
+entry_diem2.grid(row=4, column=1, padx=5, pady=4, sticky="w")
+
+create_label("Điểm 3", 4, 2)
+entry_diem3 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
+entry_diem3.grid(row=4, column=3, padx=5, pady=4, sticky="w")
+
+create_label("Điểm TB", 5, 0)
+entry_diemtb = tk.Entry(frame_info, width=10, bg="white", fg="black", state="readonly")
+entry_diemtb.grid(row=5, column=1, padx=5, pady=4, sticky="w")
 
 
-frame_filter = tk.Frame(root, bg="white")
+def tinh_diem_tb():
+    """Tính điểm trung bình từ 3 điểm, làm tròn 2 chữ số và hiển thị lên ô Điểm TB."""
+    try:
+        d1 = float(entry_diem1.get()) if entry_diem1.get().strip() != "" else 0
+        d2 = float(entry_diem2.get()) if entry_diem2.get().strip() != "" else 0
+        d3 = float(entry_diem3.get()) if entry_diem3.get().strip() != "" else 0
+        tb = round((d1 + d2 + d3) / 3, 2)
+    except ValueError:
+        tb = 0
+
+    entry_diemtb.config(state="normal")
+    entry_diemtb.delete(0, tk.END)
+    entry_diemtb.insert(0, tb)
+    entry_diemtb.config(state="readonly")
+    return tb
+
+
+
+entry_diem1.bind("<KeyRelease>", lambda e: tinh_diem_tb())
+entry_diem2.bind("<KeyRelease>", lambda e: tinh_diem_tb())
+entry_diem3.bind("<KeyRelease>", lambda e: tinh_diem_tb())
+
+
+
+frame_filter = tk.Frame(main_frame, bg="white")
 frame_filter.pack(pady=5, padx=10, fill="x")
 
 tk.Label(frame_filter, text="Tìm kiếm:", bg="white", fg="black").grid(row=0, column=0, padx=5)
@@ -167,24 +210,47 @@ cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
 
 
-columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa", "diem")
-tree = ttk.Treeview(root, columns=columns, show="headings", height=12)
+center_frame = tk.Frame(main_frame, bg="white")
+center_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+center_frame.rowconfigure(0, weight=1)
+center_frame.columnconfigure(0, weight=1)
+
+columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa",
+           "diem1", "diem2", "diem3", "diemtb")
+tree = ttk.Treeview(center_frame, columns=columns, show="headings", height=12)
 
 for col in columns:
     tree.heading(col, text=col.upper())
-tree.pack(padx=10, pady=10, fill="both")
+
+tree.grid(row=0, column=0, sticky="nsew")  
+
+ 
+scrollbar = ttk.Scrollbar(center_frame, orient="vertical", command=tree.yview)
+tree.configure(yscrollcommand=scrollbar.set)
+scrollbar.grid(row=0, column=1, sticky="ns")
+
+ 
+frame_btn = tk.Frame(center_frame, bg="white")
+frame_btn.grid(row=1, column=0, columnspan=2, pady=5)
+
 
 
 def clear_input():
     entry_mssv.delete(0, tk.END)
     entry_holot.delete(0, tk.END)
     entry_ten.delete(0, tk.END)
-    entry_diem.delete(0, tk.END)
     gender_var.set("Nam")
     cbb_lop.set("")
     cbb_khoa.set("")
     entry_search.delete(0, tk.END)
     date_ngaysinh.set_date("2000-01-01")
+    entry_diem1.delete(0, tk.END)
+    entry_diem2.delete(0, tk.END)
+    entry_diem3.delete(0, tk.END)
+    entry_diemtb.config(state="normal")
+    entry_diemtb.delete(0, tk.END)
+    entry_diemtb.config(state="readonly")
 
 
 def load_data(keyword=None, lop=None, khoa=None):
@@ -196,7 +262,12 @@ def load_data(keyword=None, lop=None, khoa=None):
         return
     cur = conn.cursor()
 
-    query = "SELECT * FROM sinhvien WHERE 1=1"
+    query = """
+        SELECT mssv, holot, ten, phai, ngaysinh, lop, khoa,
+               diem1, diem2, diem3, diemtb
+        FROM sinhvien
+        WHERE 1=1
+    """
     params = []
 
     if keyword:
@@ -226,11 +297,22 @@ def them_sv():
     ten = entry_ten.get().strip()
     lop = cbb_lop.get().strip()
     khoa = cbb_khoa.get().strip()
-    diem = entry_diem.get().strip()
+    diem1 = entry_diem1.get().strip()
+    diem2 = entry_diem2.get().strip()
+    diem3 = entry_diem3.get().strip()
 
-    if not mssv or not holot or not ten or not lop or not khoa or not diem:
+    if not mssv or not holot or not ten or not lop or not khoa:
         messagebox.showwarning("Thiếu dữ liệu", "Vui lòng nhập đầy đủ thông tin sinh viên.")
         return
+
+    if diem1 == "":
+        diem1 = "0"
+    if diem2 == "":
+        diem2 = "0"
+    if diem3 == "":
+        diem3 = "0"
+
+    tb = tinh_diem_tb()
 
     conn = connect_db()
     if not conn:
@@ -240,8 +322,11 @@ def them_sv():
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO sinhvien(mssv, holot, ten, phai, ngaysinh, lop, khoa, diem) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            """
+            INSERT INTO sinhvien(mssv, holot, ten, phai, ngaysinh, lop, khoa,
+                                 diem1, diem2, diem3, diemtb)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """,
             (
                 mssv,
                 holot,
@@ -250,7 +335,10 @@ def them_sv():
                 date_ngaysinh.get(),
                 lop,
                 khoa,
-                diem
+                diem1,
+                diem2,
+                diem3,
+                tb
             )
         )
         conn.commit()
@@ -285,8 +373,18 @@ def sua_sv():
     date_ngaysinh.set_date(values[4])
     cbb_lop.set(values[5])
     cbb_khoa.set(values[6])
-    entry_diem.delete(0, tk.END)
-    entry_diem.insert(0, values[7])
+
+    entry_diem1.delete(0, tk.END)
+    entry_diem2.delete(0, tk.END)
+    entry_diem3.delete(0, tk.END)
+    entry_diemtb.config(state="normal")
+    entry_diemtb.delete(0, tk.END)
+
+    entry_diem1.insert(0, values[7])
+    entry_diem2.insert(0, values[8])
+    entry_diem3.insert(0, values[9])
+    entry_diemtb.insert(0, values[10])
+    entry_diemtb.config(state="readonly")
 
 
 def luu_sv():
@@ -294,6 +392,23 @@ def luu_sv():
     if not mssv:
         messagebox.showwarning("Thiếu dữ liệu", "Chưa có MSSV để lưu (vui lòng chọn hoặc nhập lại).")
         return
+
+    holot = entry_holot.get().strip()
+    ten = entry_ten.get().strip()
+    lop = cbb_lop.get().strip()
+    khoa = cbb_khoa.get().strip()
+    diem1 = entry_diem1.get().strip()
+    diem2 = entry_diem2.get().strip()
+    diem3 = entry_diem3.get().strip()
+
+    if diem1 == "":
+        diem1 = "0"
+    if diem2 == "":
+        diem2 = "0"
+    if diem3 == "":
+        diem3 = "0"
+
+    tb = tinh_diem_tb()
 
     conn = connect_db()
     if not conn:
@@ -304,17 +419,21 @@ def luu_sv():
         cur.execute(
             """
             UPDATE sinhvien
-            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s, diem=%s
+            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s,
+                diem1=%s, diem2=%s, diem3=%s, diemtb=%s
             WHERE mssv=%s
             """,
             (
-                entry_holot.get(),
-                entry_ten.get(),
+                holot,
+                ten,
                 gender_var.get(),
                 date_ngaysinh.get(),
-                cbb_lop.get(),
-                cbb_khoa.get(),
-                entry_diem.get(),
+                lop,
+                khoa,
+                diem1,
+                diem2,
+                diem3,
+                tb,
                 mssv
             )
         )
@@ -382,7 +501,6 @@ def thoat_ung_dung():
         root.destroy()
 
 
-
 def xuat_excel():
     if not tree.get_children():
         messagebox.showwarning("Không có dữ liệu", "Không có dữ liệu để xuất Excel.")
@@ -392,10 +510,11 @@ def xuat_excel():
     ws = wb.active
     ws.title = "SinhVien"
 
-
-    headers = ["MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH", "LỚP", "KHOA", "ĐIỂM"]
+    headers = [
+        "MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH", "LỚP", "KHOA",
+        "ĐIỂM 1", "ĐIỂM 2", "ĐIỂM 3", "ĐIỂM TB"
+    ]
     ws.append(headers)
-
 
     for item in tree.get_children():
         row = tree.item(item)["values"]
@@ -408,9 +527,6 @@ def xuat_excel():
     except Exception as e:
         messagebox.showerror("Lỗi", f"Không thể lưu file Excel:\n{e}")
 
-
-frame_btn = tk.Frame(root, bg="white")
-frame_btn.pack(pady=5)
 
 ttk.Button(frame_btn, text="Thêm", width=10, command=them_sv).grid(row=0, column=0, padx=5)
 ttk.Button(frame_btn, text="Lưu", width=10, command=luu_sv).grid(row=0, column=1, padx=5)
