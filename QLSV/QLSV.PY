@@ -1,11 +1,11 @@
-import tkinter as tk  
+import tkinter as tk
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 import mysql.connector
-from openpyxl import Workbook 
+from openpyxl import Workbook
 
 
-def connect_db():  
+def connect_db():
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -29,12 +29,12 @@ def center_window(win, w=900, h=600):
     win.geometry(f"{w}x{h}+{x}+{y}")
 
 
-
 root = tk.Tk()
+root.state("zoomed")          # mở fullscreen
 root.title("QUẢN LÝ SINH VIÊN")
 root.configure(bg="white")
 center_window(root, 900, 600)
-root.resizable(False, False)
+root.resizable(True, True)
 
 style = ttk.Style()
 style.theme_use("clam")
@@ -64,7 +64,6 @@ style.map(
     background=[("active", "#d0d0d0")]
 )
 
-
 main_frame = tk.Frame(root, bg="white")
 main_frame.pack(fill="both", expand=True)
 
@@ -79,6 +78,8 @@ lbl_title.pack(pady=10)
 
 frame_info = tk.Frame(main_frame, bg="white")
 frame_info.pack(pady=5, padx=10, fill="x")
+frame_info.columnconfigure(1, weight=1)
+frame_info.columnconfigure(3, weight=1)
 
 
 def create_label(text, row, col):
@@ -93,7 +94,7 @@ def create_label(text, row, col):
     return lbl
 
 
-
+# ====== THÔNG TIN SV (không có điểm) ======
 create_label("MSSV", 0, 0)
 entry_mssv = tk.Entry(frame_info, width=18, bg="white", fg="black", insertbackground="black")
 entry_mssv.grid(row=0, column=1, padx=5, pady=4, sticky="w")
@@ -149,49 +150,7 @@ date_ngaysinh = DateEntry(
 )
 date_ngaysinh.grid(row=3, column=1, padx=5, pady=4, sticky="w")
 
-
-
-create_label("Điểm 1", 3, 2)
-entry_diem1 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
-entry_diem1.grid(row=3, column=3, padx=5, pady=4, sticky="w")
-
-create_label("Điểm 2", 4, 0)
-entry_diem2 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
-entry_diem2.grid(row=4, column=1, padx=5, pady=4, sticky="w")
-
-create_label("Điểm 3", 4, 2)
-entry_diem3 = tk.Entry(frame_info, width=10, bg="white", fg="black", insertbackground="black")
-entry_diem3.grid(row=4, column=3, padx=5, pady=4, sticky="w")
-
-create_label("Điểm TB", 5, 0)
-entry_diemtb = tk.Entry(frame_info, width=10, bg="white", fg="black", state="readonly")
-entry_diemtb.grid(row=5, column=1, padx=5, pady=4, sticky="w")
-
-
-def tinh_diem_tb():
-    """Tính điểm trung bình từ 3 điểm, làm tròn 2 chữ số và hiển thị lên ô Điểm TB."""
-    try:
-        d1 = float(entry_diem1.get()) if entry_diem1.get().strip() != "" else 0
-        d2 = float(entry_diem2.get()) if entry_diem2.get().strip() != "" else 0
-        d3 = float(entry_diem3.get()) if entry_diem3.get().strip() != "" else 0
-        tb = round((d1 + d2 + d3) / 3, 2)
-    except ValueError:
-        tb = 0
-
-    entry_diemtb.config(state="normal")
-    entry_diemtb.delete(0, tk.END)
-    entry_diemtb.insert(0, tb)
-    entry_diemtb.config(state="readonly")
-    return tb
-
-
-
-entry_diem1.bind("<KeyRelease>", lambda e: tinh_diem_tb())
-entry_diem2.bind("<KeyRelease>", lambda e: tinh_diem_tb())
-entry_diem3.bind("<KeyRelease>", lambda e: tinh_diem_tb())
-
-
-
+# ====== TÌM KIẾM / LỌC ======
 frame_filter = tk.Frame(main_frame, bg="white")
 frame_filter.pack(pady=5, padx=10, fill="x")
 
@@ -209,33 +168,33 @@ cbb_loc_khoa = ttk.Combobox(frame_filter, values=["(Tất cả)", "CNTT", "Kinh 
 cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
 
-
+# ====== BẢNG DỮ LIỆU CHÍNH (CÓ CỘT ĐIỂM) ======
 center_frame = tk.Frame(main_frame, bg="white")
 center_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
 center_frame.rowconfigure(0, weight=1)
 center_frame.columnconfigure(0, weight=1)
 
-columns = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa",
-           "diem1", "diem2", "diem3", "diemtb")
+columns = (
+    "mssv", "holot", "ten", "phai", "ngaysinh",
+    "lop", "khoa", "diem1", "diem2", "diem3", "diemtb"
+)
 tree = ttk.Treeview(center_frame, columns=columns, show="headings", height=12)
 
 for col in columns:
     tree.heading(col, text=col.upper())
 
-tree.grid(row=0, column=0, sticky="nsew")  
+tree.grid(row=0, column=0, sticky="nsew")
 
- 
 scrollbar = ttk.Scrollbar(center_frame, orient="vertical", command=tree.yview)
 tree.configure(yscrollcommand=scrollbar.set)
 scrollbar.grid(row=0, column=1, sticky="ns")
 
- 
 frame_btn = tk.Frame(center_frame, bg="white")
 frame_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
 
-
+# ================== HÀM XỬ LÝ ==================
 def clear_input():
     entry_mssv.delete(0, tk.END)
     entry_holot.delete(0, tk.END)
@@ -245,15 +204,10 @@ def clear_input():
     cbb_khoa.set("")
     entry_search.delete(0, tk.END)
     date_ngaysinh.set_date("2000-01-01")
-    entry_diem1.delete(0, tk.END)
-    entry_diem2.delete(0, tk.END)
-    entry_diem3.delete(0, tk.END)
-    entry_diemtb.config(state="normal")
-    entry_diemtb.delete(0, tk.END)
-    entry_diemtb.config(state="readonly")
 
 
 def load_data(keyword=None, lop=None, khoa=None):
+    """Load dữ liệu sinh viên (có cả cột điểm) lên bảng chính."""
     for row in tree.get_children():
         tree.delete(row)
 
@@ -297,22 +251,10 @@ def them_sv():
     ten = entry_ten.get().strip()
     lop = cbb_lop.get().strip()
     khoa = cbb_khoa.get().strip()
-    diem1 = entry_diem1.get().strip()
-    diem2 = entry_diem2.get().strip()
-    diem3 = entry_diem3.get().strip()
 
     if not mssv or not holot or not ten or not lop or not khoa:
         messagebox.showwarning("Thiếu dữ liệu", "Vui lòng nhập đầy đủ thông tin sinh viên.")
         return
-
-    if diem1 == "":
-        diem1 = "0"
-    if diem2 == "":
-        diem2 = "0"
-    if diem3 == "":
-        diem3 = "0"
-
-    tb = tinh_diem_tb()
 
     conn = connect_db()
     if not conn:
@@ -323,9 +265,10 @@ def them_sv():
         cur = conn.cursor()
         cur.execute(
             """
-            INSERT INTO sinhvien(mssv, holot, ten, phai, ngaysinh, lop, khoa,
-                                 diem1, diem2, diem3, diemtb)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO sinhvien
+            (mssv, holot, ten, phai, ngaysinh, lop, khoa,
+             diem1, diem2, diem3, diemtb)
+            VALUES (%s,%s,%s,%s,%s,%s,%s, 0,0,0,0)
             """,
             (
                 mssv,
@@ -334,11 +277,7 @@ def them_sv():
                 gender_var.get(),
                 date_ngaysinh.get(),
                 lop,
-                khoa,
-                diem1,
-                diem2,
-                diem3,
-                tb
+                khoa
             )
         )
         conn.commit()
@@ -373,18 +312,7 @@ def sua_sv():
     date_ngaysinh.set_date(values[4])
     cbb_lop.set(values[5])
     cbb_khoa.set(values[6])
-
-    entry_diem1.delete(0, tk.END)
-    entry_diem2.delete(0, tk.END)
-    entry_diem3.delete(0, tk.END)
-    entry_diemtb.config(state="normal")
-    entry_diemtb.delete(0, tk.END)
-
-    entry_diem1.insert(0, values[7])
-    entry_diem2.insert(0, values[8])
-    entry_diem3.insert(0, values[9])
-    entry_diemtb.insert(0, values[10])
-    entry_diemtb.config(state="readonly")
+    # Điểm hiển thị trong bảng, không cần trên form
 
 
 def luu_sv():
@@ -397,18 +325,6 @@ def luu_sv():
     ten = entry_ten.get().strip()
     lop = cbb_lop.get().strip()
     khoa = cbb_khoa.get().strip()
-    diem1 = entry_diem1.get().strip()
-    diem2 = entry_diem2.get().strip()
-    diem3 = entry_diem3.get().strip()
-
-    if diem1 == "":
-        diem1 = "0"
-    if diem2 == "":
-        diem2 = "0"
-    if diem3 == "":
-        diem3 = "0"
-
-    tb = tinh_diem_tb()
 
     conn = connect_db()
     if not conn:
@@ -419,8 +335,7 @@ def luu_sv():
         cur.execute(
             """
             UPDATE sinhvien
-            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s,
-                diem1=%s, diem2=%s, diem3=%s, diemtb=%s
+            SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, khoa=%s
             WHERE mssv=%s
             """,
             (
@@ -430,10 +345,6 @@ def luu_sv():
                 date_ngaysinh.get(),
                 lop,
                 khoa,
-                diem1,
-                diem2,
-                diem3,
-                tb,
                 mssv
             )
         )
@@ -511,8 +422,8 @@ def xuat_excel():
     ws.title = "SinhVien"
 
     headers = [
-        "MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH", "LỚP", "KHOA",
-        "ĐIỂM 1", "ĐIỂM 2", "ĐIỂM 3", "ĐIỂM TB"
+        "MSSV", "HỌ LÓT", "TÊN", "PHÁI", "NGÀY SINH",
+        "LỚP", "KHOA", "ĐIỂM 1", "ĐIỂM 2", "ĐIỂM 3", "ĐIỂM TB"
     ]
     ws.append(headers)
 
@@ -528,14 +439,218 @@ def xuat_excel():
         messagebox.showerror("Lỗi", f"Không thể lưu file Excel:\n{e}")
 
 
+# ====== CỬA SỔ TÍNH ĐIỂM ======
+def mo_bang_tinh_diem():
+    selected = tree.selection()
+    if not selected:
+        messagebox.showwarning("Chưa chọn", "Hãy chọn sinh viên cần tính điểm.")
+        return
+
+    values = tree.item(selected[0])["values"]
+    mssv, holot, ten, phai, ngaysinh, lop, khoa, *_ = values
+
+    win = tk.Toplevel(root)
+    win.title(f"Tính điểm cho {mssv}")
+    win.configure(bg="white")
+    center_window(win, 800, 500)
+
+    fi = tk.Frame(win, bg="white")
+    fi.pack(padx=10, pady=10, fill="x")
+
+    def mk_label(parent, text, r, c):
+        lbl = tk.Label(parent, text=text, bg="white", fg="black", font=("Arial", 10))
+        lbl.grid(row=r, column=c, padx=5, pady=4, sticky="w")
+        return lbl
+
+    mk_label(fi, "MSSV", 0, 0)
+    e_mssv = tk.Entry(fi, width=18, bg="white")
+    e_mssv.grid(row=0, column=1, padx=5, pady=4, sticky="w")
+    e_mssv.insert(0, mssv)
+    e_mssv.config(state="readonly")
+
+    mk_label(fi, "Họ lót", 1, 0)
+    e_holot = tk.Entry(fi, width=25, bg="white")
+    e_holot.grid(row=1, column=1, padx=5, pady=4, sticky="w")
+    e_holot.insert(0, holot)
+    e_holot.config(state="readonly")
+
+    mk_label(fi, "Tên", 2, 0)
+    e_ten = tk.Entry(fi, width=18, bg="white")
+    e_ten.grid(row=2, column=1, padx=5, pady=4, sticky="w")
+    e_ten.insert(0, ten)
+    e_ten.config(state="readonly")
+
+    mk_label(fi, "Phái", 0, 2)
+    e_phai = tk.Entry(fi, width=10, bg="white")
+    e_phai.grid(row=0, column=3, padx=5, pady=4, sticky="w")
+    e_phai.insert(0, phai)
+    e_phai.config(state="readonly")
+
+    mk_label(fi, "Ngày sinh", 1, 2)
+    e_ns = tk.Entry(fi, width=12, bg="white")
+    e_ns.grid(row=1, column=3, padx=5, pady=4, sticky="w")
+    e_ns.insert(0, str(ngaysinh))
+    e_ns.config(state="readonly")
+
+    mk_label(fi, "Lớp", 2, 2)
+    e_lop = tk.Entry(fi, width=15, bg="white")
+    e_lop.grid(row=2, column=3, padx=5, pady=4, sticky="w")
+    e_lop.insert(0, lop)
+    e_lop.config(state="readonly")
+
+    mk_label(fi, "Khoa", 3, 0)
+    e_khoa = tk.Entry(fi, width=20, bg="white")
+    e_khoa.grid(row=3, column=1, padx=5, pady=4, sticky="w")
+    e_khoa.insert(0, khoa)
+    e_khoa.config(state="readonly")
+
+    mk_label(fi, "Điểm 1", 4, 0)
+    e_diem1 = tk.Entry(fi, width=10, bg="white")
+    e_diem1.grid(row=4, column=1, padx=5, pady=4, sticky="w")
+
+    mk_label(fi, "Điểm 2", 4, 2)
+    e_diem2 = tk.Entry(fi, width=10, bg="white")
+    e_diem2.grid(row=4, column=3, padx=5, pady=4, sticky="w")
+
+    mk_label(fi, "Điểm 3", 5, 0)
+    e_diem3 = tk.Entry(fi, width=10, bg="white")
+    e_diem3.grid(row=5, column=1, padx=5, pady=4, sticky="w")
+
+    mk_label(fi, "Điểm TB", 5, 2)
+    e_diemtb = tk.Entry(fi, width=10, bg="white", state="readonly")
+    e_diemtb.grid(row=5, column=3, padx=5, pady=4, sticky="w")
+
+    # load điểm cũ (nếu có)
+    conn = connect_db()
+    if conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT diem1, diem2, diem3, diemtb
+            FROM sinhvien WHERE mssv=%s
+            """,
+            (mssv,)
+        )
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            d1, d2, d3, dtb = row
+            if d1 and d1 != 0:
+                e_diem1.insert(0, d1)
+            if d2 and d2 != 0:
+                e_diem2.insert(0, d2)
+            if d3 and d3 != 0:
+                e_diem3.insert(0, d3)
+            if dtb and dtb != 0:
+                e_diemtb.config(state="normal")
+                e_diemtb.insert(0, f"{dtb:.2f}")
+                e_diemtb.config(state="readonly")
+
+    def tinh_tb_local():
+        """Tính điểm TB từ 3 điểm và hiển thị, làm tròn 2 chữ số."""
+        try:
+            d1 = float(e_diem1.get()) if e_diem1.get().strip() != "" else 0
+            d2 = float(e_diem2.get()) if e_diem2.get().strip() != "" else 0
+            d3 = float(e_diem3.get()) if e_diem3.get().strip() != "" else 0
+            tb = round((d1 + d2 + d3) / 3, 2)
+        except ValueError:
+            tb = 0.0
+        e_diemtb.config(state="normal")
+        e_diemtb.delete(0, tk.END)
+        e_diemtb.insert(0, f"{tb:.2f}")
+        e_diemtb.config(state="readonly")
+        return tb
+
+    e_diem1.bind("<KeyRelease>", lambda e: tinh_tb_local())
+    e_diem2.bind("<KeyRelease>", lambda e: tinh_tb_local())
+    e_diem3.bind("<KeyRelease>", lambda e: tinh_tb_local())
+
+    center2 = tk.Frame(win, bg="white")
+    center2.pack(fill="both", expand=True, padx=10, pady=5)
+
+    cols2 = ("mssv", "holot", "ten", "phai", "ngaysinh", "lop", "khoa",
+             "diem1", "diem2", "diem3", "diemtb")
+    tree2 = ttk.Treeview(center2, columns=cols2, show="headings", height=6)
+    for c in cols2:
+        tree2.heading(c, text=c.upper())
+    tree2.grid(row=0, column=0, sticky="nsew")
+    sb2 = ttk.Scrollbar(center2, orient="vertical", command=tree2.yview)
+    tree2.configure(yscrollcommand=sb2.set)
+    sb2.grid(row=0, column=1, sticky="ns")
+    center2.rowconfigure(0, weight=1)
+    center2.columnconfigure(0, weight=1)
+
+    def load_diem_table():
+        for r in tree2.get_children():
+            tree2.delete(r)
+        conn2 = connect_db()
+        if not conn2:
+            return
+        c2 = conn2.cursor()
+        c2.execute(
+            """
+            SELECT mssv, holot, ten, phai, ngaysinh, lop, khoa,
+                   diem1, diem2, diem3, diemtb
+            FROM sinhvien
+            WHERE mssv=%s
+            """,
+            (mssv,)
+        )
+        for r in c2.fetchall():
+            tree2.insert("", tk.END, values=r)
+        conn2.close()
+
+    load_diem_table()
+
+    fb = tk.Frame(win, bg="white")
+    fb.pack(pady=5)
+
+    def luu_diem():
+        tb = tinh_tb_local()
+        d1 = e_diem1.get().strip() or "0"
+        d2 = e_diem2.get().strip() or "0"
+        d3 = e_diem3.get().strip() or "0"
+
+        conn3 = connect_db()
+        if not conn3:
+            messagebox.showerror("Lỗi", "Không thể kết nối CSDL.")
+            return
+        try:
+            c3 = conn3.cursor()
+            c3.execute(
+                """
+                UPDATE sinhvien
+                SET diem1=%s, diem2=%s, diem3=%s, diemtb=%s
+                WHERE mssv=%s
+                """,
+                (d1, d2, d3, tb, mssv)
+            )
+            conn3.commit()
+            messagebox.showinfo("Thành công", "Đã lưu điểm sinh viên.")
+            load_diem_table()
+            # reload bảng chính cho thấy điểm mới
+            load_data(keyword=entry_search.get(),
+                      lop=cbb_loc_lop.get(),
+                      khoa=cbb_loc_khoa.get())
+        except Exception as ex:
+            messagebox.showerror("Lỗi", f"Không thể lưu điểm:\n{ex}")
+        finally:
+            conn3.close()
+
+    ttk.Button(fb, text="Lưu điểm", width=12, command=luu_diem).grid(row=0, column=0, padx=5)
+    ttk.Button(fb, text="Đóng", width=12, command=win.destroy).grid(row=0, column=1, padx=5)
+
+
+# ====== NÚT CHỨC NĂNG CHÍNH ======
 ttk.Button(frame_btn, text="Thêm", width=10, command=them_sv).grid(row=0, column=0, padx=5)
 ttk.Button(frame_btn, text="Lưu", width=10, command=luu_sv).grid(row=0, column=1, padx=5)
 ttk.Button(frame_btn, text="Sửa", width=10, command=sua_sv).grid(row=0, column=2, padx=5)
 ttk.Button(frame_btn, text="Xóa", width=10, command=xoa_sv).grid(row=0, column=3, padx=5)
 ttk.Button(frame_btn, text="Hủy", width=10, command=clear_input).grid(row=0, column=4, padx=5)
 ttk.Button(frame_btn, text="Tìm kiếm", width=10, command=tim_kiem).grid(row=0, column=5, padx=5)
-ttk.Button(frame_btn, text="Xuất Excel", width=10, command=xuat_excel).grid(row=0, column=6, padx=5)
-ttk.Button(frame_btn, text="Thoát", width=10, command=thoat_ung_dung).grid(row=0, column=7, padx=5)
+ttk.Button(frame_btn, text="Tính điểm", width=10, command=mo_bang_tinh_diem).grid(row=0, column=6, padx=5)
+ttk.Button(frame_btn, text="Xuất Excel", width=10, command=xuat_excel).grid(row=0, column=7, padx=5)
+ttk.Button(frame_btn, text="Thoát", width=10, command=thoat_ung_dung).grid(row=0, column=8, padx=5)
 
 cbb_loc_lop.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
 cbb_loc_khoa.bind("<<ComboboxSelected>>", lambda e: tim_kiem())
