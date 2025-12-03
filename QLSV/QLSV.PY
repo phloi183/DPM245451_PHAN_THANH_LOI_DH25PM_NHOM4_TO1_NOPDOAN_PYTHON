@@ -94,7 +94,6 @@ def create_label(text, row, col):
     return lbl
 
 
-# ====== THÔNG TIN SV (không có điểm) ======
 create_label("MSSV", 0, 0)
 entry_mssv = tk.Entry(frame_info, width=18, bg="white", fg="black", insertbackground="black")
 entry_mssv.grid(row=0, column=1, padx=5, pady=4, sticky="w")
@@ -150,7 +149,6 @@ date_ngaysinh = DateEntry(
 )
 date_ngaysinh.grid(row=3, column=1, padx=5, pady=4, sticky="w")
 
-# ====== TÌM KIẾM / LỌC ======
 frame_filter = tk.Frame(main_frame, bg="white")
 frame_filter.pack(pady=5, padx=10, fill="x")
 
@@ -168,7 +166,6 @@ cbb_loc_khoa = ttk.Combobox(frame_filter, values=["(Tất cả)", "CNTT", "Kinh 
 cbb_loc_khoa.set("(Tất cả)")
 cbb_loc_khoa.grid(row=0, column=5, padx=5)
 
-# ====== BẢNG DỮ LIỆU CHÍNH (CÓ CỘT ĐIỂM) ======
 center_frame = tk.Frame(main_frame, bg="white")
 center_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -194,7 +191,7 @@ frame_btn = tk.Frame(center_frame, bg="white")
 frame_btn.grid(row=1, column=0, columnspan=2, pady=5)
 
 
-# ================== HÀM XỬ LÝ ==================
+
 def clear_input():
     entry_mssv.delete(0, tk.END)
     entry_holot.delete(0, tk.END)
@@ -312,7 +309,7 @@ def sua_sv():
     date_ngaysinh.set_date(values[4])
     cbb_lop.set(values[5])
     cbb_khoa.set(values[6])
-    # Điểm hiển thị trong bảng, không cần trên form
+
 
 
 def luu_sv():
@@ -439,7 +436,6 @@ def xuat_excel():
         messagebox.showerror("Lỗi", f"Không thể lưu file Excel:\n{e}")
 
 
-# ====== CỬA SỔ TÍNH ĐIỂM ======
 def mo_bang_tinh_diem():
     selected = tree.selection()
     if not selected:
@@ -627,21 +623,28 @@ def mo_bang_tinh_diem():
             )
             conn3.commit()
             messagebox.showinfo("Thành công", "Đã lưu điểm sinh viên.")
+
             load_diem_table()
-            # reload bảng chính cho thấy điểm mới
+
+            # Cập nhật lại bảng chính
             load_data(keyword=entry_search.get(),
-                      lop=cbb_loc_lop.get(),
-                      khoa=cbb_loc_khoa.get())
+                    lop=cbb_loc_lop.get(),
+                    khoa=cbb_loc_khoa.get())
+
+            # 🔥 TỰ ĐỘNG ĐÓNG CỬA SỔ
+            win.destroy()
+
         except Exception as ex:
             messagebox.showerror("Lỗi", f"Không thể lưu điểm:\n{ex}")
         finally:
             conn3.close()
 
+
     ttk.Button(fb, text="Lưu điểm", width=12, command=luu_diem).grid(row=0, column=0, padx=5)
     ttk.Button(fb, text="Đóng", width=12, command=win.destroy).grid(row=0, column=1, padx=5)
 
 
-# ====== NÚT CHỨC NĂNG CHÍNH ======
+
 ttk.Button(frame_btn, text="Thêm", width=10, command=them_sv).grid(row=0, column=0, padx=5)
 ttk.Button(frame_btn, text="Lưu", width=10, command=luu_sv).grid(row=0, column=1, padx=5)
 ttk.Button(frame_btn, text="Sửa", width=10, command=sua_sv).grid(row=0, column=2, padx=5)
